@@ -1,99 +1,155 @@
-" Disable vi compatibility
-set nocompatible
-
-" Vundle
-filetype off
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-Plugin 'kien/ctrlp.vim'
-Plugin 'tpope/vim-surround'
-call vundle#end()
-
-" Load indent file for the current filetype
-filetype indent on
-filetype plugin on
-
-" Indentation and blank line
-set smartindent
-set autoindent
-set expandtab
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
-set eol
-
-" Mapping and escape timeouts
-set timeout
-set timeoutlen=1000 " mapped sequences
-set ttimeoutlen=10  " escape sequence delay
-
-" Tab completion for Vim command line
-set wildmenu
-set wildmode=list:longest
-
-" Misc
+"""""""""
+" defaults
+" as neovim - see https://neovim.io/doc/user/vim_diff.html#vim-differences.
 syntax on
-hi Normal ctermbg=NONE
+filetype plugin indent on
+set autoindent
+set autoread
+set backspace=indent,eol,start
+" backupdir is omitted
+if has('nvim')
+  set belloff=all
+endif
+set complete=.,w,b,u,t
+" directory is omitted
+set display=lastline
+set formatoptions=tcqj
+set history=10000
+set hlsearch
+set incsearch
+set langnoremap
+" langremap is omitted
+set laststatus=2
+set listchars="tab:> ,trail:-,nbsp:+"
+set nocompatible
+set nrformats="bin,hex"
+set ruler
+set sessionoptions=blank,buffers,curdir,folds,help,tabpages,winsize
+set showcmd
+set smarttab
+set tabpagemax=50
+set tags=./tags;,tags
 set ttyfast
+" undodir is omitted
+set viminfo="!,'100,<50,s10,h"
+set wildmenu
 
-" Darker background after 80 characters
-set textwidth=80
-let &colorcolumn=join(range(81,999),",")
-highlight ColorColumn ctermbg=235 guibg=#2c2d27
 
-" Allow unsaved buffers to be hidden (backgrounded).
-set hidden
+"""""""""
+" display
+" color scheme
+if filereadable(expand("~/.vimrc_background"))
+  let base16colorspace=256
+  source ~/.vimrc_background
+endif
 
-" Link vim's default delete/yank register to the system clipboard.
-set clipboard=unnamed
+" vertical split color
+autocmd ColorScheme * highlight VertSplit ctermfg=235 ctermbg=235 cterm=NONE
 
-" Mouse for scrolling etc in console.
+" status line color
+autocmd ColorScheme * highlight StatusLine ctermfg=250 ctermbg=238 cterm=NONE
+autocmd ColorScheme * highlight StatusLineNC ctermfg=black ctermbg=235 cterm=NONE
+
+" highlight current cursor line, with a notch after column 80
+set cursorline
+set colorcolumn=81
+
+" show line numbers
+set number
+
+" I = skip intro message on startup
+set shortmess=I
+
+" display invisible characters as per 'listchars' option
+set list
+
+
+
+""""""""""
+" keyboard
+
+" change <Leader> from default '\' to home-row-friendly ';'
+let mapleader = ";"
+
+" arrow keys navigate splits in normal mode; use hjkl for movement.
+nmap <Up> <C-W><Up>
+nmap <Down> <C-W><Down>
+nmap <Left> <C-W><Left>
+nmap <Right> <C-W><Right>
+
+" move lines up/down, reindenting
+nnoremap <C-j> :m .+1<CR>==
+nnoremap <C-k> :m .-2<CR>==
+vnoremap <C-j> :m '>+1<CR>gv=gv
+vnoremap <C-k> :m '<-2<CR>gv=gv
+
+" reselect visual block after shifting indentation
+vnoremap < <gv
+vnoremap > >gv
+
+
+"""""""
+" mouse
+
+" scrolling etc in console.
 " a = normal + visual + insert + command-line + help files
 set mouse=a
 
-" Jump to matching HTML tag, if/else/endif etc using "%"
-runtime macros/matchit.vim
 
-" Number of commands remembered.
-set history=1000
+""""""""""
+" behavior
 
-" Reload files when changed on disk
-set autoread
+" indent with two spaces by default
+set expandtab
+set tabstop=2
+set softtabstop=0 " disable
+set shiftwidth=0 " when zero, the tabstop value is used
 
-" UTF-8 by default
-set encoding=utf-8
+" use clipboard for all operations, without explicit +/* registers.
+set clipboard+=unnamedplus
 
-" Always show status line
-set laststatus=2
+" keep hidden/background buffers; allow unsaved changes etc.
+set hidden
 
-" Show context above/below cursorline
-set scrolloff=5
+" lines to keep above/below cursor when scrolling
+set scrolloff=3
 
-" Search (case-insensitive unless caps)
-set ignorecase
-set smartcase
-
-" Ruler and line numbers
-set ruler
-set relativenumber
-set number
-
-" Split to right side
-set splitright
-
-" Whitespace
-highlight ExtraWhitespace ctermbg=darkgreen guibg=darkgreen
-autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
-match ExtraWhitespace /\s\+\%#\@<!$/
+" show effect of command incrementally; :%s/foo/bar/g etc
+"nosplit": shows the effects of a command incrementally, as you type.
+"split"  : also shows partial off-screen results in a preview window.
+if has('nvim')
+  set inccommand=split
+endif
 
 " No ~backup and .swp files
 set nobackup
 set nowritebackup
 set noswapfile
 
-""""""""""
-" Keyboard and Shortcuts
 
-" Leader of '\' is too far from home row.
-let mapleader = ";"
-let g:mapleader = ";"
+""""""""""""
+" file types
+
+" assume shell scripts as bash; fixes $(subcommand) syntax highlighting.
+" https://github.com/neovim/neovim/blob/253f6f3b/runtime/syntax/sh.vim#L16
+let g:is_bash=1
+
+
+"""""""""
+" plugins
+
+" ctrlp.vim
+" when opening multiple files, prompt for tab/split/etc.
+let g:ctrlp_arg_map = 1
+let g:ctrlp_max_files=0
+let g:ctrlp_max_depth=40
+" ignore some folders and files for CtrlP indexing
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  '\.git$\|\.yardoc\|public$|log\|tmp$',
+  \ 'file': '\.so$\|\.dat$|\.DS_Store$'
+  \ }
+
+" vim-go
+if executable("goimports")
+  let g:go_fmt_command = "goimports"
+endif
