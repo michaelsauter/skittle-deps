@@ -1,5 +1,9 @@
 # Skittle Deps
 
+Careful! This repo is discontinued. Please check out
+[michaelsauter/config](https://github.com/michaelsauter/config) instead, which
+is way simpler and more up-to-date.
+
 ## Overview
 Some dependencies to use with [Skittle](https://github.com/d11wtq/skittle).
 
